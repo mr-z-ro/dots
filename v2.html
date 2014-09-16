@@ -1,0 +1,136 @@
+<html>
+<head>
+  <title>This is only a Test</title>
+</head>
+<body style="margin:0; padding:0;">
+  <canvas id="canvas"></canvas>
+  <div id="controls" style="position:absolute; top:0; right:0; margin: 12px;">
+    <input id="spacing" type="text" value="16" onkeypress="Colors.setSpacing(this);" />
+  </div>
+  
+  <script type="text/javascript">
+  (function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
+                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+ 
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+ 
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+  }());
+  
+  var Colors =
+  {
+    animation: null,
+  	canvas: null,
+  	context: null,
+  	hexpad: "000000",
+  	lemmings: [],
+  	radius: 4,
+	spacing: 32,
+	
+	mouse: { x: 8888, y: 8888 },
+  	
+    init: function(spacing) {
+      /* Configuration params */
+      this.spacing = Math.max(this.radius*3, spacing);
+    
+      /* Get canvas */
+      this.canvas = document.getElementById("canvas");
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+      this.canvas.style.display = "block";
+      
+      /* Add canvas listeners */
+      this.canvas.addEventListener("click", this.click, false);
+      this.canvas.addEventListener("mousemove", this.mousemove, false);
+      this.canvas.addEventListener("mouseout", this.mouseout, false);
+      
+      /* Get context */
+      this.context = this.canvas.getContext('2d');
+      
+      this.createLemmings();
+      this.drawLemmings();
+    },
+    
+    click: function() {
+      
+    },
+    
+    createLemmings: function() {
+      this.lemmings = [];
+      for (i=0; i < this.canvas.width; i += this.spacing) {
+        for (j=0; j < this.canvas.height; j += this.spacing) {
+          this.lemmings.push({x:i,y:j});
+        }
+      }
+    },
+    
+    drawLemmings: function() {
+      this.animation = requestAnimationFrame( function(){ Colors.drawLemmings() } );
+    
+      var i = 0;
+      var lemming = this.lemmings[0];
+      while (lemming) {
+        this.context.beginPath();
+        this.context.arc(lemming.x, lemming.y, this.radius, 0, 2 * Math.PI, false);
+        this.context.fillStyle = this.heatHex(lemming);
+        this.context.fill();
+        lemming = this.lemmings[i++];
+      }
+    },
+    
+    heatHex: function(l) {
+      var distance = parseInt(Math.sqrt(Math.pow((this.mouse.x - l.x),2) + Math.pow((this.mouse.y - l.y),2)));
+      var scale = (0.6*this.canvas.height)/distance;
+	  var intColor = parseInt(scale * 16777215);
+	  var hexColor = (this.hexpad + intColor.toString(16)).slice(-6);
+      return "#" + hexColor;
+    },
+    
+    mousemove: function(event) {
+      Colors.mouse.x = event.offsetX || (event.layerX - Colors.canvas.offsetLeft);
+      Colors.mouse.y = event.offsetY || (event.layerY - Colors.canvas.offsetTop);
+    },
+    
+    mouseout: function(event) {
+      Colors.mouse.x = 8888;
+      Colors.mouse.y = 8888;      
+    },
+    
+    randomHex: function() {
+      var intColor = parseInt(Math.random() * 16777215);
+      var hexColor = (this.hexpad + intColor.toString(16)).slice(-6);
+      return "#" + hexColor;
+    },
+    
+    setSpacing: function(e) {
+      setTimeout(function() {
+        var spacing = parseInt(e.value);
+        if (spacing) {
+          Colors.init(spacing);
+        }
+      }, 0);
+    }
+  }
+
+  Colors.init(parseInt(document.getElementById("spacing").value));
+  
+  </script>
+</body>
+</html>

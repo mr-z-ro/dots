@@ -1,0 +1,81 @@
+<html>
+<head>
+  <title>This is only a Test</title>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="controls" style="position:absolute; top:0; right:0; margin: 12px;">
+    <input id="spacing" type="text" value="32" onkeypress="Colors.setSpacing(this);" />
+  </div>
+  
+  <script type="text/javascript">
+  var Colors =
+  {
+  	canvas: null,
+  	context: null,
+  	lemmings: [],
+  	radius: 4,
+	spacing: 32,
+  	
+    init: function(spacing) {
+      /* Configuration params */
+      this.spacing = Math.max(radius, spacing);
+    
+      /* Get canvas */
+      this.canvas = document.getElementById("canvas");
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+      this.canvas.style.display = "block";
+      
+      /* Add canvas listeners */
+      this.canvas.addEventListener("click", this.click, false);
+      
+      /* Get context */
+      this.context = this.canvas.getContext('2d');
+      
+      this.createLemmings();
+    },
+    
+    click: function() {
+      Colors.context.fillStyle   = Colors.randomHex(); // set canvas background color
+      Colors.context.fillRect  (0,   0, 350, 350);  // now fill the canvas
+      Colors.context.fillStyle    = '#FFFFFF';  // set text color
+      Colors.context.font         = 'bold 9px sans-serif';  // set text font
+      Colors.context.textBaseline = 'top';  // set text position
+      Colors.context.fillText  ('https://www.mattgrasser.com/clocks/v5.html', 10, 335);
+    },
+    
+    createLemmings: function() {
+    	this.lemmings = [];
+    	for (i=0; i < this.canvas.width; i += this.spacing) {
+    	  for (j=0; j < this.canvas.height; j += this.spacing) {
+            this.context.beginPath();
+            this.context.arc(i, j, this.radius, 0, 2 * Math.PI, false);
+            this.context.fillStyle = this.randomHex();
+            this.context.fill();
+    	  }
+    	}
+    },
+    
+    randomHex: function() {
+      var intColor = parseInt(Math.random() * 16777215);
+      var hexColor = intColor.toString(16);
+      return "#" + hexColor;
+    },
+    
+    setSpacing: function(e) {
+      setTimeout(function() {
+        var spacing = parseInt(e.value);
+        if (spacing && spacing > Colors.radius) {
+          Colors.init(spacing);
+        }
+      }, 0);
+    }
+  }
+
+  Colors.init(parseInt(document.getElementById("spacing").value));
+  setInterval(function() { Colors.init(parseInt(document.getElementById("spacing").value)); }, 1000);
+  
+  </script>
+</body>
+</html>
